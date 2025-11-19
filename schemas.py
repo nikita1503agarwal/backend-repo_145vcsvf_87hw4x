@@ -1,48 +1,59 @@
 """
-Database Schemas
+Database Schemas for DevShowcase Platform
 
-Define your MongoDB collection schemas here using Pydantic models.
-These schemas are used for data validation in your application.
+Each Pydantic model represents a MongoDB collection (class name lowercased).
 
-Each Pydantic model represents a collection in your database.
-Model name is converted to lowercase for the collection name:
-- User -> "user" collection
-- Product -> "product" collection
-- BlogPost -> "blogs" collection
+Collections:
+- developer
+- softwareapp
+- review
 """
+from typing import List, Optional
+from pydantic import BaseModel, Field, HttpUrl, EmailStr
 
-from pydantic import BaseModel, Field
-from typing import Optional
 
-# Example schemas (replace with your own):
-
-class User(BaseModel):
+class Developer(BaseModel):
     """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
+    Developer profile
+    Collection: developer
     """
-    name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
-    age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
-    is_active: bool = Field(True, description="Whether user is active")
+    name: str = Field(..., description="Full name of the developer")
+    email: EmailStr = Field(..., description="Contact email")
+    bio: Optional[str] = Field(None, description="Short bio")
+    website: Optional[HttpUrl] = Field(None, description="Personal website")
+    github: Optional[str] = Field(None, description="GitHub username or URL")
+    twitter: Optional[str] = Field(None, description="Twitter handle")
+    avatar_url: Optional[HttpUrl] = Field(None, description="Avatar image URL")
 
-class Product(BaseModel):
+
+class SoftwareApp(BaseModel):
     """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
+    Software application submitted by a developer
+    Collection: softwareapp
     """
-    title: str = Field(..., description="Product title")
-    description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
-    in_stock: bool = Field(True, description="Whether product is in stock")
+    title: str = Field(..., description="App title")
+    description: str = Field(..., description="What it does and why it's useful")
+    platform: str = Field(..., description="web | mobile | desktop | cli | library")
+    category: Optional[str] = Field(None, description="Category e.g. productivity, devtools")
+    tags: List[str] = Field(default_factory=list, description="Keywords/tags")
+    repo_url: Optional[HttpUrl] = Field(None, description="Repository URL")
+    website_url: Optional[HttpUrl] = Field(None, description="Landing page URL")
+    image_url: Optional[HttpUrl] = Field(None, description="Hero/cover image URL")
+    version: Optional[str] = Field(None, description="Current version string")
+    license: Optional[str] = Field(None, description="License identifier")
+    author_name: str = Field(..., description="Submitting developer name")
+    author_email: EmailStr = Field(..., description="Submitting developer email")
 
-# Add your own schemas here:
-# --------------------------------------------------
 
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class Review(BaseModel):
+    """
+    Structured review for an app
+    Collection: review
+    """
+    app_id: str = Field(..., description="Referenced SoftwareApp _id as string")
+    reviewer_name: str = Field(..., description="Name of the reviewer")
+    rating: int = Field(..., ge=1, le=5, description="Star rating 1-5")
+    pros: Optional[str] = Field(None, description="What works well")
+    cons: Optional[str] = Field(None, description="What could be improved")
+    suggestions: Optional[str] = Field(None, description="Actionable suggestions")
+    comment: Optional[str] = Field(None, description="General comment")
